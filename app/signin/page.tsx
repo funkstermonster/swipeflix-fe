@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import Form from "./form";
 
-export default async  function LoginPage() {
+export default function LoginPage() {
     return (
         <Form/>
     )
