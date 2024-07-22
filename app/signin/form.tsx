@@ -4,27 +4,26 @@ import { toast, Toaster } from "sonner";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import React, { useState } from "react";
-import axiosInstance from "../utils/axios-config"; // Ensure this path is correct
+import axiosInstance from "../utils/axios-config";
+import { useRouter } from 'next/navigation';
+import useAuthStore from "@/app/stores/authStore";
 
 export default function SignInForm() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+  const { checkAuth } = useAuthStore();
 
   const onSubmit = async () => {
     console.log("onsubmit");
     try {
-      let credentials = {
-        email: email,
-        password: password
-      }
+      let credentials = { email, password };
       const response = await axiosInstance.post('/api/auth/signin', credentials);
       console.log('response: ', response);
       if (response.status === 200) {
-        const user = response.data;
-        // Handle successful login (e.g., save token, redirect, etc.)
+        await checkAuth();
         toast.success('Login successful');
-        console.log('User:', user);
+        router.push('/'); // Navigate to home page
       } else {
         const error = response.data;
         toast.error(`Login failed: ${error.message}`);
@@ -37,7 +36,7 @@ export default function SignInForm() {
 
   return (
     <>
-      <Toaster/>
+      <Toaster />
       <form className="flex flex-col gap-2 mx-auto max-w-md mt-10">
         <div>
           <h1 className="mb-5 mt-5">Login</h1>
