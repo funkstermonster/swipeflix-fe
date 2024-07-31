@@ -4,12 +4,14 @@ import axiosInstance from "../utils/axios-config";
 import useAuthStore from "../stores/authStore";
 import { useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
+import { Artist } from "../models/artist";
 
 export default function SwipeMovies() {
   const [randomMovie, setRandomMovie] = useState(null);
   const [movieId, setMovieId] = useState("");
   const { getUserId } = useAuthStore();
   const [imgSrc, setImgSrc] = useState("");
+  const [artists, setArtists] = useState<Artist[]>([]);
   const defaultImg = "/images/fallback-image.jpg";
 
   const fetchMovie = async () => {
@@ -19,6 +21,9 @@ export default function SwipeMovies() {
       setRandomMovie(response.data);
       setMovieId(response.data.id);
 
+      if (response.data.artists) {
+        setArtists(response.data.artists);
+      }
       try {
         const posterResponse = await axiosInstance.post(
           "http://localhost:3000/api/poster",
@@ -133,22 +138,43 @@ export default function SwipeMovies() {
             </svg>
           </motion.div>
           <div className="w-full max-w-4xl mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
-          <h2 className="text-3xl font-bold mb-6 text-center text-white">Movie Details</h2>
-          <div className="space-y-6">
-
-            <div className="p-4 bg-gray-700 rounded-lg">
-              <h2 className="text-xl font-semibold text-gray-300 mb-2">Release Date</h2>
-              <p className="text-white">{randomMovie.releaseDate}</p>
+            <h2 className="text-3xl font-bold mb-6 text-center text-white">
+              Movie Details
+            </h2>
+            <div className="space-y-6">
+              <div className="p-4 bg-gray-700 rounded-lg">
+                <h2 className="text-xl font-semibold text-gray-300 mb-2">
+                  Release Date
+                </h2>
+                <p className="text-white">{randomMovie.releaseDate}</p>
+              </div>
+              <div className="p-4 bg-gray-700 rounded-lg">
+                <h2 className="text-xl font-semibold text-gray-300 mb-2">
+                  Overview
+                </h2>
+                <p className="text-white">{randomMovie.overview}</p>
+              </div>
+              <div className="p-4 bg-gray-700 rounded-lg">
+                <h2 className="text-xl font-semibold text-gray-300 mb-2">
+                  IMDb Rating
+                </h2>
+                <p className="text-white">{randomMovie.rating}</p>
+              </div>
+              <div className="p-4 bg-gray-700 rounded-lg">
+                <h2 className="text-xl font-semibold text-gray-300 mb-2">
+                  Main Cast
+                </h2>
+                {artists.length > 0 ? (
+                  <ul className="text-white">
+                    {artists.map((artist) => (
+                      <li key={artist.id}>{artist.name}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-white">Unknown Cast</p>
+                )}
+              </div>
             </div>
-            <div className="p-4 bg-gray-700 rounded-lg">
-              <h2 className="text-xl font-semibold text-gray-300 mb-2">Overview</h2>
-              <p className="text-white">{randomMovie.overview}</p>
-            </div>
-            <div className="p-4 bg-gray-700 rounded-lg">
-              <h2 className="text-xl font-semibold text-gray-300 mb-2">IMDb Rating</h2>
-              <p className="text-white">{randomMovie.rating}</p>
-            </div>
-          </div>
           </div>
         </div>
       )}
