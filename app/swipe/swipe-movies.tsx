@@ -1,10 +1,15 @@
 "use client";
 
+"use client";
+
 import axiosInstance from "../utils/axios-config";
 import useAuthStore from "../stores/authStore";
 import { useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Artist } from "../models/artist";
+import { useRouter } from "next/navigation";
+import useSwipeStore from "../stores/swipeStore";
+import { Button } from "@nextui-org/button";
 
 export default function SwipeMovies() {
   const [randomMovie, setRandomMovie] = useState(null);
@@ -13,6 +18,8 @@ export default function SwipeMovies() {
   const [imgSrc, setImgSrc] = useState("");
   const [artists, setArtists] = useState<Artist[]>([]);
   const defaultImg = "/images/fallback-image.jpg";
+  const { swipeCount, incrementSwipe, displayPrompt, setDisplayPrompt } = useSwipeStore();
+  const router = useRouter();
 
   const fetchMovie = async () => {
     try {
@@ -74,6 +81,7 @@ export default function SwipeMovies() {
           `api/swipe/right/${getUserId()}/${movieId}`
         );
         console.log("Swipe right response:", response.data);
+        incrementSwipe();  // Increment swipe count
         fetchMovie();
       } catch (error) {
         console.error("Error swiping right: ", error);
@@ -85,11 +93,22 @@ export default function SwipeMovies() {
           `api/swipe/left/${getUserId()}/${movieId}`
         );
         console.log("Swipe left response:", response.data);
+        incrementSwipe();  // Increment swipe count
         fetchMovie();
       } catch (error) {
         console.error("Error swiping left: ", error);
       }
     }
+  };
+
+  const handleContinueSwiping = () => {
+    setDisplayPrompt(false);
+    fetchMovie();
+  };
+
+  const handleGetRecommendations = () => {
+    setDisplayPrompt(false);  // Hide prompt
+    router.push('/recommendation');
   };
 
   return (
@@ -184,6 +203,17 @@ export default function SwipeMovies() {
           </div>
         </div>
       )}
+      {
+        displayPrompt && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg">
+              <h2>What would you like to do?</h2>
+              <Button className="px-4 py-2 bg-blue-500 text-white rounded-lg mr-4" onClick={handleContinueSwiping}>Continue Swiping</Button>
+              <Button className="px-4 py-2 bg-green-500 text-white rounded-lg" onClick={handleGetRecommendations}>Get Recommendations</Button>
+            </div>
+          </div>
+        )
+      }
     </motion.div>
   );
 }

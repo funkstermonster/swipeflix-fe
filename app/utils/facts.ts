@@ -1,0 +1,23 @@
+export const facts = [
+  "Daniel Day-Lewis is the only actor to have won three Academy Awards for Best Actor. He won for 'My Left Foot' (1989), 'There Will Be Blood' (2007), and 'Lincoln' (2012).",
+  "The Lord of the Rings: The Return of the King (2003) is one of only three films to win 11 Academy Awards, tying with 'Ben-Hur' (1959) and 'Titanic' (1997).",
+  "Marlon Brando refused the Oscar for Best Actor for his role in 'The Godfather' (1972) to protest Hollywood's portrayal of Native Americans in film. He sent a Native American activist, Sacheen Littlefeather, to decline the award on his behalf.",
+  "Christopher Lee, who played Saruman in 'The Lord of the Rings' trilogy, was the only cast member who had met J.R.R. Tolkien. He was also a real-life inspiration for James Bond creator Ian Fleming, who was his cousin.",
+  "Jack Nicholson has received the most Academy Award nominations for an actor, with a total of 12 nominations and three wins.",
+  "The Shawshank Redemption (1994) was a box office flop when it was first released, but it became immensely popular through television broadcasts and rentals, eventually becoming one of the most beloved films of all time.",
+  "Audrey Hepburn performed most of her own singing in 'Breakfast at Tiffany's' (1961), including the iconic song 'Moon River,' which was written specifically for her limited vocal range.",
+  "Tom Hanks and Meg Ryan have starred together in three romantic comedies: 'Joe Versus the Volcano' (1990), 'Sleepless in Seattle' (1993), and 'You've Got Mail' (1998).",
+  "Leonardo DiCaprio has never used drugs, despite his portrayal of a heavy drug user in 'The Wolf of Wall Street' (2013). He researched the role by talking to drug experts and watching YouTube videos of addicts.",
+  "Gone with the Wind (1939) remains the highest-grossing film of all time when adjusted for inflation, having earned approximately $3.8 billion in today's dollars.",
+  "Inception (2010) director Christopher Nolan is known for avoiding the use of CGI as much as possible. For example, the rotating hallway fight scene was shot using a practical effect with a rotating set.",
+  "Meryl Streep holds the record for the most Academy Award nominations for an actress, with 21 nominations and three wins.",
+  "Alfred Hitchcock never won an Academy Award for Best Director, despite being one of the most influential filmmakers in cinema history. He was nominated five times.",
+  "Keanu Reeves deferred part of his salary from 'The Matrix' sequels to ensure that the special effects and costume departments had sufficient funding.",
+  "The Wizard of Oz (1939) was one of the first films to use Technicolor, and the transition from the sepia-toned Kansas to the vibrant, colorful Oz was groundbreaking at the time.",
+  "Natalie Portman was only 13 years old when she starred in her breakthrough role as Mathilda in 'Léon: The Professional' (1994).",
+  "Robert Downey Jr. was once considered for the role of Batman/Bruce Wayne in 'Batman' (1989), a role that eventually went to Michael Keaton.",
+  "Johnny Depp based his iconic portrayal of Captain Jack Sparrow in 'Pirates of the Caribbean' on Keith Richards, the guitarist for The Rolling Stones.",
+  "Emma Watson almost turned down the role of Hermione Granger in the 'Harry Potter' series because she was initially unsure about committing to such a long-term project at a young age.",
+  "The Dark Knight (2008) was the first superhero film to gross over $1 billion worldwide and was instrumental in prompting the Academy to expand the number of Best Picture nominees from five to ten.",
+];
+
