@@ -146,19 +146,25 @@ export default function SwipeMovies() {
                 <h2 className="text-xl font-semibold text-gray-300 mb-2">
                   Release Date
                 </h2>
-                <p className="text-white">{randomMovie.releaseDate}</p>
+                <p className="text-white">
+                  {randomMovie.releaseDate || "Unknown Release Date"}
+                </p>
               </div>
               <div className="p-4 bg-gray-700 rounded-lg">
                 <h2 className="text-xl font-semibold text-gray-300 mb-2">
                   Overview
                 </h2>
-                <p className="text-white">{randomMovie.overview}</p>
+                <p className="text-white">
+                  {randomMovie.overview || "No overview available"}
+                </p>
               </div>
               <div className="p-4 bg-gray-700 rounded-lg">
                 <h2 className="text-xl font-semibold text-gray-300 mb-2">
                   IMDb Rating
                 </h2>
-                <p className="text-white">{randomMovie.rating}</p>
+                <p className="text-white">
+                  {randomMovie.rating || "No rating available"}
+                </p>
               </div>
               <div className="p-4 bg-gray-700 rounded-lg">
                 <h2 className="text-xl font-semibold text-gray-300 mb-2">
