@@ -1,4 +1,3 @@
-"use client";
 
 "use client";
 
@@ -18,7 +17,7 @@ export default function SwipeMovies() {
   const [imgSrc, setImgSrc] = useState("");
   const [artists, setArtists] = useState<Artist[]>([]);
   const defaultImg = "/images/fallback-image.jpg";
-  const { swipeCount, incrementSwipe, displayPrompt, setDisplayPrompt } = useSwipeStore();
+  const { incrementSwipe, displayPrompt, setDisplayPrompt } = useSwipeStore();
   const router = useRouter();
 
   const fetchMovie = async () => {
