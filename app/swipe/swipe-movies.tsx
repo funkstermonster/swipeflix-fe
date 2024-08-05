@@ -14,8 +14,8 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure,
 } from "@nextui-org/modal";
+import { checkPoster, scrapeAndSavePoster } from "../service/movie-service";
 
 export default function SwipeMovies() {
   const [randomMovie, setRandomMovie] = useState(null);
@@ -23,6 +23,7 @@ export default function SwipeMovies() {
   const { getUserId } = useAuthStore();
   const [imgSrc, setImgSrc] = useState("");
   const [artists, setArtists] = useState<Artist[]>([]);
+  const [posterBase64, setPosterBase64] = useState("");
   const defaultImg = "/images/fallback-image.jpg";
   const { incrementSwipe, displayModal, setDisplayModal } = useSwipeStore();
   const router = useRouter();
@@ -33,31 +34,27 @@ export default function SwipeMovies() {
       console.log("Fetched movie:", response.data);
       setRandomMovie(response.data);
       setMovieId(response.data.id);
+      let posterBase64 = await checkPoster(response.data.id);
+      setPosterBase64(posterBase64);
 
       if (response.data.artists) {
         setArtists(response.data.artists);
       }
-      try {
-        const posterResponse = await axiosInstance.post(
-          "http://localhost:3000/api/poster",
-          { title: response.data.originalTitle, id: response.data.imdbId }
+
+      if (!posterBase64) {
+        posterBase64 = await scrapeAndSavePoster(
+          response.data.imdbId,
+          response.data.id,
+          response.data.originalTitle
         );
-        setImgSrc(posterResponse.data.src);
-        console.log("poster res", posterResponse);
-      } catch (error) {
-        if (
-          error.response &&
-          (error.response.status === 500 || error.response.status === 403)
-        ) {
-          setImgSrc(defaultImg);
-        } else {
-          console.error("Error fetching poster:", error);
-        }
+        setPosterBase64(posterBase64);
       }
 
       console.log("movie id: ", response.data.id);
     } catch (error) {
+      setImgSrc("fallbackImage");
       console.error("Error fetching movie:", error);
+      setImgSrc(defaultImg);
     }
   };
 
@@ -105,12 +102,11 @@ export default function SwipeMovies() {
 
   const handleContinueSwiping = () => {
     setDisplayModal(false);
-    fetchMovie();
   };
 
   const handleGetRecommendations = () => {
     setDisplayModal(false);
-    router.push('/recommendation');
+    router.push("/recommendation");
   };
 
   return (
@@ -120,7 +116,7 @@ export default function SwipeMovies() {
     >
       <h1 className="text-3xl font-bold mb-6">Swipe Movies</h1>
       {randomMovie && (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center pb-20">
           <h2 className="text-2xl font-semibold mb-4">{randomMovie.title}</h2>
           <motion.div
             className="relative mb-4"
@@ -131,7 +127,7 @@ export default function SwipeMovies() {
           >
             <motion.img
               className="w-[300px] h-[427px] rounded-lg shadow-lg"
-              src={imgSrc}
+              src={posterBase64 != null ? `${posterBase64}` : defaultImg}
               width={300}
               height={427}
             />
@@ -205,32 +201,32 @@ export default function SwipeMovies() {
           </div>
         </div>
       )}
-        <Modal isOpen={displayModal} className="dark">
-          <ModalContent>
-            <ModalHeader>What would you like to do?</ModalHeader>
-            <ModalBody>
-              <p>
-                If you would like to continue swiping movies, click on "Continue
-                Swiping." If you would like to check the movie recommendations
-                based on your swipes, click on "Get Recommendations."
-              </p>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg mr-4"
-                onClick={handleContinueSwiping}
-              >
-                Continue Swiping
-              </Button>
-              <Button
-                className="px-4 py-2 bg-green-500 text-white rounded-lg"
-                onClick={handleGetRecommendations}
-              >
-                Get Recommendations
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+      <Modal isOpen={displayModal} className="dark">
+        <ModalContent>
+          <ModalHeader>What would you like to do?</ModalHeader>
+          <ModalBody>
+            <p>
+              If you would like to continue swiping movies, click on "Continue
+              Swiping." If you would like to check the movie recommendations
+              based on your swipes, click on "Get Recommendations."
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg mr-4"
+              onClick={handleContinueSwiping}
+            >
+              Continue Swiping
+            </Button>
+            <Button
+              className="px-4 py-2 bg-green-500 text-white rounded-lg"
+              onClick={handleGetRecommendations}
+            >
+              Get Recommendations
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </motion.div>
   );
 }

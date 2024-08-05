@@ -11,7 +11,7 @@ const useSwipeStore = create<SwipeStore>()(
             const newCount = state.swipeCount + 1;
             return {
               swipeCount: newCount,
-              displayModal: newCount % 2 === 0,
+              displayModal: newCount % 3 === 0,
             };
           }),
         displayModal: false,
@@ -20,7 +20,7 @@ const useSwipeStore = create<SwipeStore>()(
       {
         name: "swipe-store", 
         getStorage: () => localStorage,
-        version: 2
+        version: 4
       }
     )
   );

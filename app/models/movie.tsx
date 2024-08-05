@@ -9,4 +9,5 @@ export interface Movie {
     title: String;
     rating: number;
     artists: Artist;
+
 }

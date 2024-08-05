@@ -29,3 +29,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({msg: error}, {status: 500});
   }
 };
+
+export async function GET(req: NextRequest) {
+  const  id  = req.nextUrl.searchParams;
+
+  try {
+    const response = await fetch(`http://localhost:8080/api/movies/${id}`);
+    const movie = await response.json();
+
+    if (movie.poster && movie.poster.imgData) {
+      return NextResponse.json({ src: movie.poster.imgData }, { status: 200 });
+    } else {
+      return NextResponse.json({ msg: "No poster found in the database" }, { status: 404 });
+    }
+  } catch (error) {
+    return NextResponse.json({ msg: error.message }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  const { id, imgData } = await req.json();
+
+  try {
+    const response = await fetch(`http://localhost:8080/api/movies/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ imgData: imgData }),
+    });
+
+    if (response.ok) {
+      return NextResponse.json({ msg: "Poster saved successfully" }, { status: 200 });
+    } else {
+      const errorText = await response.text();
+      return NextResponse.json({ msg: errorText }, { status: response.status });
+    }
+  } catch (error) {
+    return NextResponse.json({ msg: error.message }, { status: 500 });
+  }
+}
