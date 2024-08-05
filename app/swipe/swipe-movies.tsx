@@ -1,4 +1,3 @@
-
 "use client";
 
 import axiosInstance from "../utils/axios-config";
@@ -9,6 +8,14 @@ import { Artist } from "../models/artist";
 import { useRouter } from "next/navigation";
 import useSwipeStore from "../stores/swipeStore";
 import { Button } from "@nextui-org/button";
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  useDisclosure,
+} from "@nextui-org/modal";
 
 export default function SwipeMovies() {
   const [randomMovie, setRandomMovie] = useState(null);
@@ -17,7 +24,7 @@ export default function SwipeMovies() {
   const [imgSrc, setImgSrc] = useState("");
   const [artists, setArtists] = useState<Artist[]>([]);
   const defaultImg = "/images/fallback-image.jpg";
-  const { incrementSwipe, displayPrompt, setDisplayPrompt } = useSwipeStore();
+  const { incrementSwipe, displayModal, setDisplayModal } = useSwipeStore();
   const router = useRouter();
 
   const fetchMovie = async () => {
@@ -58,10 +65,6 @@ export default function SwipeMovies() {
     fetchMovie();
   }, []);
 
-  useEffect(() => {
-    console.log(imgSrc);
-  }, [imgSrc]);
-
   const x = useMotionValue(0);
   const xInput = [-100, 0, 100];
   const background = useTransform(x, xInput, [
@@ -80,7 +83,7 @@ export default function SwipeMovies() {
           `api/swipe/right/${getUserId()}/${movieId}`
         );
         console.log("Swipe right response:", response.data);
-        incrementSwipe();  // Increment swipe count
+        incrementSwipe();
         fetchMovie();
       } catch (error) {
         console.error("Error swiping right: ", error);
@@ -92,7 +95,7 @@ export default function SwipeMovies() {
           `api/swipe/left/${getUserId()}/${movieId}`
         );
         console.log("Swipe left response:", response.data);
-        incrementSwipe();  // Increment swipe count
+        incrementSwipe();
         fetchMovie();
       } catch (error) {
         console.error("Error swiping left: ", error);
@@ -101,12 +104,12 @@ export default function SwipeMovies() {
   };
 
   const handleContinueSwiping = () => {
-    setDisplayPrompt(false);
+    setDisplayModal(false);
     fetchMovie();
   };
 
   const handleGetRecommendations = () => {
-    setDisplayPrompt(false);  // Hide prompt
+    setDisplayModal(false);
     router.push('/recommendation');
   };
 
@@ -202,17 +205,32 @@ export default function SwipeMovies() {
           </div>
         </div>
       )}
-      {
-        displayPrompt && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg">
-              <h2>What would you like to do?</h2>
-              <Button className="px-4 py-2 bg-blue-500 text-white rounded-lg mr-4" onClick={handleContinueSwiping}>Continue Swiping</Button>
-              <Button className="px-4 py-2 bg-green-500 text-white rounded-lg" onClick={handleGetRecommendations}>Get Recommendations</Button>
-            </div>
-          </div>
-        )
-      }
+        <Modal isOpen={displayModal} className="dark">
+          <ModalContent>
+            <ModalHeader>What would you like to do?</ModalHeader>
+            <ModalBody>
+              <p>
+                If you would like to continue swiping movies, click on "Continue
+                Swiping." If you would like to check the movie recommendations
+                based on your swipes, click on "Get Recommendations."
+              </p>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg mr-4"
+                onClick={handleContinueSwiping}
+              >
+                Continue Swiping
+              </Button>
+              <Button
+                className="px-4 py-2 bg-green-500 text-white rounded-lg"
+                onClick={handleGetRecommendations}
+              >
+                Get Recommendations
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
     </motion.div>
   );
 }
