@@ -1,6 +1,7 @@
 import { Artist } from "./artist";
 
 export interface Movie {
+    posterBase64: string;
     id: string;
     imdbId: string;
     overview: string;
