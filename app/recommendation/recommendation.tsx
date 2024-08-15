@@ -11,6 +11,7 @@ import { Movie } from "../models/movie";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { Image } from "@nextui-org/image";
+import { toast } from "sonner";
 
 export default function GetRecommendations() {
   const { getUserId } = useAuthStore();
@@ -21,10 +22,11 @@ export default function GetRecommendations() {
   const [hoveredCardId, setHoveredCardId] = useState(null);
   const [clickedCardId, setClickedCardId] = useState(null);
 
-  const handleHeartClick = (id) => {
+  const handleHeartClick = (id: any) => {
     setClickedCardId(id);
+    favoriteMovie(id);
     // Reset clicked state after animation ends
-    setTimeout(() => setClickedCardId(null), 650); // Match this duration with your animation
+    setTimeout(() => setClickedCardId(null), 650);
   };
   
   const defaultImg = "/images/fallback-image.jpg";
@@ -52,10 +54,31 @@ export default function GetRecommendations() {
     }
   };
 
+  const favoriteMovie = async (movieId: number) => {
+    const userId = getUserId();
+    
+    try {
+      const response = await axiosInstance.post(`/api/favorites/add`, null, {
+        params: {
+          userId,
+          movieId
+        }
+      });
+        
+      const data = response.data;
+      toast.success("Successfully added to your favorites!");
+      console.log('Movie added to favorites:', data);
+    } catch (error) {
+      toast.error("An error has occured while adding movie to your favorites.")
+      console.error('Error adding movie to favorites:', error);
+    }
+  };
+
   useEffect(() => {
     setSkeletonVisible(true);
     getRecommendedMovies();
   }, [getUserId]);
+
 
   if (skeletonVisible) {
     return <RecommendationSkeleton />;
@@ -66,18 +89,23 @@ export default function GetRecommendations() {
   }
 
   return (
-<div className="flex flex-col items-center p-5">
+    <div className="flex flex-col items-center p-5">
       <h1 className="text-2xl font-bold mb-4">Your Recommended Movies</h1>
       <div className="flex flex-wrap justify-center gap-4 w-full max-w-screen-lg">
-        {movies && movies.map((movie) => (
-          <Card key={movie.id} className="p-4 shadow-lg">
+        {movies.map((movie) => (
+          <Card key={movie.id} className="p-4 shadow-lg relative">
             <CardHeader className="flex justify-center">
               <h2 className="text-xl font-semibold">{movie.title}</h2>
             </CardHeader>
             <CardBody className="flex-1">
-              <Image className="object-cover" 
-                  isZoomed  
-                  src={movie.posterBase64} width="240px" height="360px"/>
+              <Image 
+                className="object-cover"
+                isZoomed 
+                src={movie.posterBase64} 
+                width="240px" 
+                height="360px"
+                alt={`Poster of ${movie.title}`} 
+              />
             </CardBody>
             <CardFooter 
               className="border-t border-gray-200 mt-4 flex justify-between items-center"
@@ -92,7 +120,9 @@ export default function GetRecommendations() {
                 <motion.div
                   onClick={() => handleHeartClick(movie.id)}
                   className="p-4 cursor-pointer transition-all ease-in-out duration-300"
+                  aria-label="Add to favorites"
                 >
+
                   <Heart
                     size={24}
                     fill={hoveredCardId === movie.id ? "red" : "none"}
@@ -104,10 +134,10 @@ export default function GetRecommendations() {
                 {clickedCardId === movie.id && (
                   <>
                     {Array.from({ length: 5 }).map((_, index) => {
-                      // Calculate position for radial spread in a star pattern
+                      // Calculate position for radial spread
                       const angle = (index / 5) * 2 * Math.PI;
-                      const x = 30 * Math.cos(angle); // Adjust the radius as needed
-                      const y = 30 * Math.sin(angle); // Adjust the radius as needed
+                      const x = 30 * Math.cos(angle);
+                      const y = 30 * Math.sin(angle);
                       return (
                         <motion.div
                           key={index}
@@ -116,7 +146,7 @@ export default function GetRecommendations() {
                           transition={{ duration: 0.5, delay: index * 0.1 }} // Staggered effect
                           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                         >
-                          <Heart size={12} fill="red" strokeWidth={1} />
+                          <Heart size={12} fill="red" strokeWidth={1}/>
                         </motion.div>
                       );
                     })}

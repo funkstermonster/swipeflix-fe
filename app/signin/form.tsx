@@ -23,7 +23,7 @@ export default function SignInForm() {
       if (response.status === 200) {
         await checkAuth();
         toast.success('Login successful');
-        router.push('/'); // Navigate to home page
+        router.push('/');
       } else {
         const error = response.data;
         toast.error(`Login failed: ${error.message}`);

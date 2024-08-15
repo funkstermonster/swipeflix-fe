@@ -6,7 +6,7 @@ import { toast, Toaster } from "sonner";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 
-import useAuthStore from "@/app/stores/authStore"; // Adjust the import path as necessary
+import useAuthStore from "@/app/stores/authStore";
 import { useRouter } from "next/navigation";
 
 export default function RegisterForm() {
@@ -26,9 +26,9 @@ export default function RegisterForm() {
         const { token } = response.data;
         // Save the token in the cookie
         document.cookie = `token=${token}; path=/;`;
-        await checkAuth(); // Update the auth state
+        await checkAuth();
         toast.success('Register successful');
-        router.push('/'); // Navigate to home page
+        router.push('/'); 
       } else {
         const error = response.data;
         toast.error(`Register failed: ${error.message}`);
