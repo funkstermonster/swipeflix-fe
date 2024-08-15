@@ -11,7 +11,7 @@ import { Movie } from "../models/movie";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { Image } from "@nextui-org/image";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 
 export default function GetRecommendations() {
   const { getUserId } = useAuthStore();
@@ -64,12 +64,11 @@ export default function GetRecommendations() {
           movieId
         }
       });
-        
+      toast.success("Successfully added to your favorites!"); 
       const data = response.data;
-      toast.success("Successfully added to your favorites!");
       console.log('Movie added to favorites:', data);
     } catch (error) {
-      toast.error("An error has occured while adding movie to your favorites.")
+      toast.error("Movie already added to favorites!")
       console.error('Error adding movie to favorites:', error);
     }
   };
@@ -89,6 +88,8 @@ export default function GetRecommendations() {
   }
 
   return (
+    <>
+    <Toaster/>
     <div className="flex flex-col items-center p-5">
       <h1 className="text-2xl font-bold mb-4">Your Recommended Movies</h1>
       <div className="flex flex-wrap justify-center gap-4 w-full max-w-screen-lg">
@@ -158,5 +159,6 @@ export default function GetRecommendations() {
         ))}
       </div>
     </div>
+    </>
   );
 };

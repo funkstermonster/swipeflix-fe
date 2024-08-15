@@ -35,10 +35,10 @@ export default function FavoriteMovies() {
           movieId
         }
       });
+      toast.success("Successfully removed from your favorites!");
       setFavoriteMovies((prevMovies) => prevMovies?.filter(movie => movie.id !== movieId) || []);
       const data = response.data;
       console.log('Movie removed from favorites:', data);
-      toast.success("Successfully removed from your favorites!");
   
     } catch (error) {
       toast.error("An error occurred while removing the movie from your favorites.");
