@@ -2,11 +2,8 @@
 
 import axiosInstance from "../utils/axios-config";
 import useAuthStore from "../stores/authStore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { Artist } from "../models/artist";
-import { useRouter } from "next/navigation";
-import useSwipeStore from "../stores/swipeStore";
 import { Button } from "@nextui-org/button";
 import {
   Modal,
@@ -15,52 +12,58 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/modal";
-import { checkPoster, scrapeAndSavePoster } from "../service/movie-service";
+import { fetchAndProcessPosters } from "../service/movie-service";
+import { useRouter } from "next/navigation";
+import useSwipeStore from "../stores/swipeStore";
 
 export default function SwipeMovies() {
-  const [randomMovie, setRandomMovie] = useState(null);
-  const [movieId, setMovieId] = useState("");
+  const [movies, setMovies] = useState<any[]>([]);
+  const [currentMovieIndex, setCurrentMovieIndex] = useState(0);
+  const [posterBase64Map, setPosterBase64Map] = useState<{ [key: string]: string }>({});
   const { getUserId } = useAuthStore();
-  const [imgSrc, setImgSrc] = useState("");
-  const [artists, setArtists] = useState<Artist[]>([]);
-  const [posterBase64, setPosterBase64] = useState("");
-  const defaultImg = "/images/fallback-image.jpg";
+  const [isFetching, setIsFetching] = useState(false);
   const { incrementSwipe, displayModal, setDisplayModal } = useSwipeStore();
   const router = useRouter();
 
-  const fetchMovie = async () => {
+  const fetchMovies = async () => {
+    if (isFetching) return;
+    setIsFetching(true);
+
     try {
+      // Fetch a batch of movies
       const response = await axiosInstance.get("api/movies/random");
-      console.log("Fetched movie:", response.data);
-      setRandomMovie(response.data);
-      setMovieId(response.data.id);
-      let posterBase64 = await checkPoster(response.data.id);
-      setPosterBase64(posterBase64);
-
-      if (response.data.artists) {
-        setArtists(response.data.artists);
-      }
-
-      if (!posterBase64) {
-        posterBase64 = await scrapeAndSavePoster(
-          response.data.imdbId,
-          response.data.id,
-          response.data.originalTitle
-        );
-        setPosterBase64(posterBase64);
-      }
-
-      console.log("movie id: ", response.data.id);
+      const moviesData = response.data;
+      //setMovies((prevMovies) => [...prevMovies, ...moviesData]);
+      setMovies(moviesData)
+      // Process each movie's poster
+      const posterMap = await fetchAndProcessPosters(moviesData);
+      // setPosterBase64Map((prevMap) => ({
+      //   ...prevMap,
+      //   ...posterMap,
+      // }));
+      setPosterBase64Map(posterMap)
     } catch (error) {
-      setImgSrc("fallbackImage");
-      console.error("Error fetching movie:", error);
-      setImgSrc(defaultImg);
+      console.error("Error fetching movies:", error);
+    } finally {
+      setIsFetching(false);
     }
   };
 
+  const loadMoreMoviesIfNeeded = useCallback(() => {
+    if (currentMovieIndex == 10 && !isFetching) {
+      setCurrentMovieIndex(0);
+      fetchMovies();
+    }
+  }, [currentMovieIndex, movies.length, isFetching]);
+
   useEffect(() => {
-    fetchMovie();
+    fetchMovies();
   }, []);
+
+  useEffect(() => {
+    console.log('currmovie index: ', currentMovieIndex)
+    loadMoreMoviesIfNeeded();
+  }, [currentMovieIndex, loadMoreMoviesIfNeeded]);
 
   const x = useMotionValue(0);
   const xInput = [-100, 0, 100];
@@ -73,15 +76,16 @@ export default function SwipeMovies() {
   const crossPathB = useTransform(x, [-50, -100], [0, 1]);
 
   const handleDragEnd = async (_, info) => {
+    const currentMovie = movies[currentMovieIndex];
     if (info.offset.x > 50) {
       // Swipe right
       try {
         const response = await axiosInstance.post(
-          `api/swipe/right/${getUserId()}/${movieId}`
+          `api/swipe/right/${getUserId()}/${currentMovie.id}`
         );
         console.log("Swipe right response:", response.data);
         incrementSwipe();
-        fetchMovie();
+        nextMovie();
       } catch (error) {
         console.error("Error swiping right: ", error);
       }
@@ -89,15 +93,19 @@ export default function SwipeMovies() {
       // Swipe left
       try {
         const response = await axiosInstance.post(
-          `api/swipe/left/${getUserId()}/${movieId}`
+          `api/swipe/left/${getUserId()}/${currentMovie.id}`
         );
         console.log("Swipe left response:", response.data);
         incrementSwipe();
-        fetchMovie();
+        nextMovie();
       } catch (error) {
         console.error("Error swiping left: ", error);
       }
     }
+  };
+
+  const nextMovie = () => {
+    setCurrentMovieIndex((prevIndex) => (prevIndex + 1));
   };
 
   const handleContinueSwiping = () => {
@@ -109,15 +117,18 @@ export default function SwipeMovies() {
     router.push("/recommendation");
   };
 
+  const currentMovie = movies[currentMovieIndex];
+  const posterBase64 = posterBase64Map[currentMovie?.id] || "/images/fallback-image.jpg";
+
   return (
     <motion.div
       className="flex flex-col items-center justify-center min-h-screen"
       style={{ background }}
     >
       <h1 className="text-3xl font-bold mb-6">Swipe Movies</h1>
-      {randomMovie && (
+      {currentMovie ? (
         <div className="flex flex-col items-center pb-20">
-          <h2 className="text-2xl font-semibold mb-4">{randomMovie.title}</h2>
+          <h2 className="text-2xl font-semibold mb-4">{currentMovie.title}</h2>
           <motion.div
             className="relative mb-4"
             style={{ x }}
@@ -127,7 +138,7 @@ export default function SwipeMovies() {
           >
             <motion.img
               className="w-[300px] h-[427px] rounded-lg shadow-lg"
-              src={posterBase64 != null ? `${posterBase64}` : defaultImg}
+              src={posterBase64}
               width={300}
               height={427}
             />
@@ -164,7 +175,7 @@ export default function SwipeMovies() {
                   Release Date
                 </h2>
                 <p className="text-white">
-                  {randomMovie.releaseDate || "Unknown Release Date"}
+                  {currentMovie.releaseDate || "Unknown Release Date"}
                 </p>
               </div>
               <div className="p-4 bg-gray-700 rounded-lg">
@@ -172,7 +183,7 @@ export default function SwipeMovies() {
                   Overview
                 </h2>
                 <p className="text-white">
-                  {randomMovie.overview || "No overview available"}
+                  {currentMovie.overview || "No overview available"}
                 </p>
               </div>
               <div className="p-4 bg-gray-700 rounded-lg">
@@ -180,16 +191,16 @@ export default function SwipeMovies() {
                   IMDb Rating
                 </h2>
                 <p className="text-white">
-                  {randomMovie.rating || "No rating available"}
+                  {currentMovie.rating || "No rating available"}
                 </p>
               </div>
               <div className="p-4 bg-gray-700 rounded-lg">
                 <h2 className="text-xl font-semibold text-gray-300 mb-2">
                   Main Cast
                 </h2>
-                {artists.length > 0 ? (
+                {currentMovie.artists?.length > 0 ? (
                   <ul className="text-white">
-                    {artists.map((artist) => (
+                    {currentMovie.artists.map((artist: any) => (
                       <li key={artist.id}>{artist.name}</li>
                     ))}
                   </ul>
@@ -200,6 +211,8 @@ export default function SwipeMovies() {
             </div>
           </div>
         </div>
+      ) : (
+        <p>Loading movies...</p>
       )}
       <Modal isOpen={displayModal} className="dark">
         <ModalContent>

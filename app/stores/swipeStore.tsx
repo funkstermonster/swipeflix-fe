@@ -20,7 +20,7 @@ const useSwipeStore = create<SwipeStore>()(
       {
         name: "swipe-store", 
         getStorage: () => localStorage,
-        version: 4
+        version: 5
       }
     )
   );

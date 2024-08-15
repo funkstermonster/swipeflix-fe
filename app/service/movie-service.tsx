@@ -89,3 +89,26 @@ export async function scrapeAndSavePoster(
     return null;
   }
 }
+
+  export async function fetchAndProcessPosters(movies: Array<{ imdbId: string, id: string, originalTitle: string }>): Promise<{ [key: string]: string | null }> {
+    console.log("fetching and processing posters for batch");
+  
+    const posterPromises = movies.map(async (movie) => {
+      let posterBase64 = await checkPoster(movie.id);
+      if (!posterBase64) {
+        posterBase64 = await scrapeAndSavePoster(
+          movie.imdbId,
+          movie.id,
+          movie.originalTitle
+        );
+      }
+      return { id: movie.id, posterBase64 };
+    });
+  
+    const posters = await Promise.all(posterPromises);
+    return posters.reduce((acc, { id, posterBase64 }) => {
+      acc[id] = posterBase64;
+      return acc;
+    }, {} as { [key: string]: string | null });
+  }
+
